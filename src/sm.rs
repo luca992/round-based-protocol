@@ -1,7 +1,9 @@
 use std::time::Duration;
+use async_trait::async_trait;
 
 use serde::{Deserialize, Serialize};
 
+#[async_trait]
 /// State machine of party involved in round-based protocol
 pub trait StateMachine {
     /// Body of transmitting messages
@@ -68,6 +70,10 @@ pub trait StateMachine {
     /// sabotage the protocol, but protocol might be designed to be resistant to such attack, so
     /// it's not a critical error, but obviously it should be reported.
     fn proceed(&mut self) -> Result<(), Self::Err>;
+
+    async fn proceed_async(&mut self) -> Result<(), Self::Err> {
+        self.proceed()
+    }
 
     /// Deadline for a particular round
     ///

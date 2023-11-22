@@ -179,10 +179,7 @@ where
     async fn proceed_if_needed(&mut self) -> Result<(), Error<SM::Err, IErr, O::Error>> {
         let mut state = self.state.take().ok_or(InternalError::MissingState)?;
         while state.wants_to_proceed() {
-            let (result, s) = tokio::task::spawn_blocking(move || (state.proceed(), state))
-                .await
-                .map_err(Error::ProceedPanicked)?;
-            state = s;
+            let result = state.proceed_async().await; // `proceed` is now an async function
 
             match result {
                 Ok(()) => (),
