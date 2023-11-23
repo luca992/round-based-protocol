@@ -3,6 +3,11 @@ use async_trait::async_trait;
 
 use serde::{Deserialize, Serialize};
 
+#[cfg(not(target_arch = "wasm32"))]
+use std::thread;
+#[cfg(target_arch = "wasm32")]
+use wasm_thread as thread;
+
 #[async_trait]
 /// State machine of party involved in round-based protocol
 pub trait StateMachine {
@@ -72,7 +77,9 @@ pub trait StateMachine {
     fn proceed(&mut self) -> Result<(), Self::Err>;
 
     async fn proceed_async(&mut self) -> Result<(), Self::Err> {
-        self.proceed()
+        thread::spawn(|| {
+            self.proceed()
+        }).join_async()
     }
 
     /// Deadline for a particular round
